@@ -1,21 +1,16 @@
 public class Main {
 
-    static long timeout = 1000 * 1;
+    static long timeout = 1000 * 2;
 
     public static void runCoverAlgorithm(String graphType, int startingVertex) throws Exception {
         long graphAvg = 0, graphMax = 0, graphMin = Long.MAX_VALUE;
-        Graph graph;
-        if (graphType == "clique") {
-            graph = cliqueGraph();
-        } else if (graphType == "chain") {
-            graph = chainGraph();
-        } else if (graphType == "candy") {
-            graph = candyGraph();
-        } else if (graphType == "ccliques") {
-            graph = chainedCliquesGraph();
-        } else {
-            throw new Exception("Not supported !!! (yet...)");
-        }
+        Graph graph = switch (graphType) {
+            case "clique" -> cliqueGraph();
+            case "chain" -> chainGraph();
+            case "candy" -> candyGraph();
+            case "ccliques" -> chainedCliquesGraph();
+            default -> throw new Exception("Not supported !!! (yet...)");
+        };
 
         for (int i = 0; i < 5; i++) {
             long time = graph.coverTime(-1, timeout);
@@ -73,11 +68,13 @@ public class Main {
     }
 
     public static void EX2() {
-
+        var graph = chainedCliquesGraph();
+        System.out.println("chain:");
+        graph.pageRankAlgo(0.015,64);
     }
 
     public static void main(String[] args) {
-        EX1();
+        //EX1();
         EX2();
     }
 

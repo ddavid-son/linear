@@ -1,17 +1,19 @@
-import javax.swing.plaf.synth.SynthTextAreaUI;
-import java.lang.reflect.Array;
 import java.util.Arrays;
+import java.util.Random;
 
 public class Graph {
     private int[][] graph;
+    int[] outDegree;
 
 
     public Graph(int size) {
         graph = new int[size][size];
+        outDegree = new int[size];
     }
 
     public Graph() {
         graph = new int[0][0];
+        outDegree = new int[0];
     }
 
     public void addVertex(int vertex) {
@@ -22,13 +24,56 @@ public class Graph {
         graph = newAdjacencyMatrix;
     }
 
+    public void pageRankAlgo(double epsilon, int maxIteration) {
+        double[] rank = new double[graph.length];
+        double[] base = new double[graph.length];
+        Arrays.fill(base, 1.0 / graph.length);
+        Arrays.fill(rank, 0);
+        rank[(int) (Math.random() * rank.length)] = 1;// random start
+        double[] newRank = new double[graph.length];
+        double diff = 1;
+        int iteration = 0;
+        while (diff > epsilon && iteration < maxIteration) {
+            // build the new stationary distribution vector
+            for (int i = 0; i < graph.length; i++) {
+                double sum = 0;
+                for (int j = 0; j < graph.length; j++) {
+                    if (graph[j][i] == 1 && rank[j] != 0) {
+                        sum += rank[j] / getOutDegree(j);
+                    }
+                }
+
+                if (i % 1200 == 0) System.out.println("i is " + i);
+
+                newRank[i] = sum;
+            }
+
+            diff = 0;
+            for (int i = 0; i < graph.length; i++) {
+                diff += Math.pow(base[i] - newRank[i], 2);
+            }
+            diff = Math.sqrt(diff);
+            rank = newRank;
+            iteration++;
+            var count = Arrays.stream(rank).filter(x -> x > 0).count();
+            System.out.println("iteration: " + iteration + " diff: " + diff + " count: " + count);
+        }
+        System.out.println("PageRank: ");
+    }
+
+    public int getOutDegree(int vertex) {
+        return outDegree[vertex];
+    }
+
     public void addEdge(int src, int dst, boolean isDirected) {
         if (src < 0 || dst < 0 || src >= graph.length || dst >= graph.length) {
             throw new IllegalArgumentException("Vertex not found");
         }
         graph[src][dst] = 1;
+        outDegree[src]++;
         if (!isDirected) {
             graph[dst][src] = 1;
+            outDegree[dst]++;
         }
     }
 
@@ -71,7 +116,7 @@ public class Graph {
             }
             if (!visited[current]) {
                 count++;
-                totalMiss+= miss;
+                totalMiss += miss;
 //                System.out.println("misses: "+totalMiss+ " +" + miss);
                 miss = 0;
 //                System.out.println("total cover: " + count);
