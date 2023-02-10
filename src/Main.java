@@ -1,8 +1,3 @@
-import java.io.File;
-import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.List;
-
 public class Main {
 
     static long timeout = 1000 * 1;
@@ -56,7 +51,7 @@ public class Main {
         System.out.println();
     }
 
-    public static void main(String[] args) {
+    public static void EX1() {
         try {
             // System.setOut(new PrintStream(new File("output-file.txt")));
 
@@ -75,6 +70,15 @@ public class Main {
         } catch(Exception err) {
             System.out.println(err);
         }
+    }
+
+    public static void EX2() {
+
+    }
+
+    public static void main(String[] args) {
+        EX1();
+        EX2();
     }
 
     private static Graph candyGraph() {
