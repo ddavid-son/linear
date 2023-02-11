@@ -1,14 +1,24 @@
+import javax.swing.*;
 import java.util.Arrays;
 import java.util.Random;
 
 public class Graph {
+
     private int[][] graph;
     int[] outDegree;
+
+    String type = "";
 
 
     public Graph(int size) {
         graph = new int[size][size];
         outDegree = new int[size];
+        Arrays.fill(outDegree, 0);
+    }
+
+    public Graph(int size, String type) {
+        this(size);
+        this.type = type;
     }
 
     public Graph() {
@@ -87,11 +97,17 @@ public class Graph {
         }
         int count = 1, miss = 0, totalMiss = 0;
         int initial = current;
+        int bla = 0;
 
         boolean[] visited = new boolean[graph.length];
         long start = System.currentTimeMillis();
         while (count < graph.length) {
+            bla++;
             visited[current] = true;
+
+            System.out.println(bla == count + totalMiss + miss);
+            if ((totalMiss + count + miss) % 500 == 0)
+                System.out.println("initial " + initial + " count: " + count + " miss: " + miss + " totalMiss: " + totalMiss + " current: " + current);
             current = getNeighbour(current);
             if ((count + miss) % 10000 == 0) {
                 String graphPart = "";
@@ -129,16 +145,48 @@ public class Graph {
     }
 
     private int getNeighbour(int current) {
-        var idx = (int) (Math.random() * Arrays.stream(graph[current]).filter(i -> i == 1).count());
+        return switch (type) {
+            case "chain" -> getChainNeighbour(current);
+            case "clique" -> getCliqueNeighbour();
+            case "candy" -> getCandyNeighbour(current);
+            case "ccliques" -> getcCliequeNeighbour(current);
+            default -> throw new IllegalStateException("Unexpected value: " + type);
+        };
+    }
 
-        for (int i = 0; i < graph[current].length; i++) {
-            if (graph[current][i] == 1) {
-                if (idx == 0) {
-                    return i;
-                }
-                idx--;
-            }
+    private int getChainNeighbour(int current) {
+        var val = (new Random().nextInt(3) + current - 1) % graph.length;
+        return val == -1 ? graph.length - 1 : val;
+    }
+
+    private int getCliqueNeighbour() {
+        return new Random().nextInt(graph.length);
+    }
+
+    private int getCandyNeighbour(int current) {
+        if (outDegree[current] <= 3) {
+            int val = (new Random().nextInt(3) + current - 1) % (int) Math.pow(2, 13);
+            return val == -1 ? 1 : val;
+        } else if (current == Math.pow(2, 13)) {
+            return new Random().nextInt((int) Math.pow(2, 13) + 1) + (int) Math.pow(2, 13) - 1;
+        } else {
+            return new Random().nextInt((int) Math.pow(2, 13)) + (int) Math.pow(2, 13);
         }
-        return Integer.MAX_VALUE;
+    }
+
+    private int getcCliequeNeighbour(int current) {
+        if (outDegree[current] <= 3) {
+            int val = new Random().nextInt(3) + current - 1 % (int) Math.pow(2, 13);
+            return val == -1 ? graph.length - 1 : val;
+        } else if (current == Math.pow(2, 13)) {
+            return new Random().nextInt((int) Math.pow(2, 12) + 1) + (int) Math.pow(2, 13) - 1;
+        } else if (current > Math.pow(2, 13) && current < Math.pow(2, 13) + Math.pow(2, 12)) {
+            return new Random().nextInt((int) Math.pow(2, 12)) + (int) Math.pow(2, 13);
+        } else if (current != graph.length - 1) {
+            return new Random().nextInt((int) Math.pow(2, 12)) + (int) Math.pow(2, 13) + (int) Math.pow(2, 12);
+        } else {
+            var val = new Random().nextInt((int) Math.pow(2, 12) + 1) + (int) Math.pow(2, 13) + (int) Math.pow(2, 12);
+            return val % graph.length;
+        }
     }
 }

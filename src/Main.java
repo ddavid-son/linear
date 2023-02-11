@@ -1,6 +1,6 @@
 public class Main {
 
-    static long timeout = 1000 * 2;
+    static long timeout = 1000 * 60 * 5;
 
     public static void runCoverAlgorithm(String graphType, int startingVertex) throws Exception {
         long graphAvg = 0, graphMax = 0, graphMin = Long.MAX_VALUE;
@@ -12,11 +12,14 @@ public class Main {
             default -> throw new Exception("Not supported !!! (yet...)");
         };
 
+        System.out.println("graph created");
+
         for (int i = 0; i < 5; i++) {
             long time = graph.coverTime(-1, timeout);
             graphAvg += time;
             graphMax = Math.max(graphMax, time);
             graphMin = Math.min(graphMin, time);
+            System.out.println("run number: " + i + " time: " + time);
         }
 
         System.out.println();
@@ -51,10 +54,10 @@ public class Main {
             // System.setOut(new PrintStream(new File("output-file.txt")));
 
             System.out.println("clique:");
-            runCoverAlgorithm("clique", 0);
+//            runCoverAlgorithm("clique", 0);
 
             System.out.println("chain:");
-            runCoverAlgorithm("chain", 0);
+//            runCoverAlgorithm("chain", 0);
 
             System.out.println("candy:");
             runCoverAlgorithm("candy", 16000);
@@ -62,7 +65,7 @@ public class Main {
             System.out.println("ccliques:");
             runCoverAlgorithm("ccliques", 16000);
 
-        } catch(Exception err) {
+        } catch (Exception err) {
             System.out.println(err);
         }
     }
@@ -70,67 +73,60 @@ public class Main {
     public static void EX2() {
         var graph = chainedCliquesGraph();
         System.out.println("chain:");
-        graph.pageRankAlgo(0.015,64);
+        graph.pageRankAlgo(0.015, 64);
     }
 
     public static void main(String[] args) {
-        //EX1();
-        EX2();
+        EX1();
+        //EX2();
     }
 
+    // ==================== Graphs ==================== //
     private static Graph candyGraph() {
-        Graph candy = new Graph((int) Math.pow(2, 14));
-        // System.out.println("Graph created");
+        Graph candy = new Graph((int) Math.pow(2, 14), "candy");
 
         int i = 0;
-        // first half is a chain
         for (; i < Math.pow(2, 13); i++) {
             candy.addEdge(i, i, true);
-            candy.addEdge(i, i + 1,false);
+            candy.addEdge(i, i + 1, false);
         }
 
-        // second half is a clique
         for (; i < Math.pow(2, 14); i++) {
             for (int j = (int) Math.pow(2, 13); j < Math.pow(2, 14); j++) {
                 candy.addEdge(i, j, true);
             }
         }
-        // System.out.println("Graph filled");
+
         return candy;
     }
 
     private static Graph chainGraph() {
-        Graph chain = new Graph((int) Math.pow(2, 14));
-        // System.out.println("Graph created");
+        Graph chain = new Graph((int) Math.pow(2, 14), "chain");
 
         int i = 0;
         for (; i < Math.pow(2, 14) - 1; i++) {
             chain.addEdge(i, i, true);
             chain.addEdge(i, i + 1);
         }
-        chain.addEdge(i, 0);
-        // System.out.println("Graph filled");
 
+        chain.addEdge(i, 0);
         return chain;
     }
 
     private static Graph cliqueGraph() {
-        Graph graph = new Graph((int) Math.pow(2, 14));
-        // System.out.println("Graph created");
+        Graph graph = new Graph((int) Math.pow(2, 14), "clique");
 
         for (int i = 0; i < Math.pow(2, 14); i++) {
             for (int j = 0; j < Math.pow(2, 14); j++) {
                 graph.addEdge(i, j, true);
             }
         }
-        // System.out.println("Graph filled");
 
         return graph;
     }
 
     private static Graph chainedCliquesGraph() {
-        Graph chainedCliques = new Graph((int) Math.pow(2, 14));
-        // System.out.println("Graph created");
+        Graph chainedCliques = new Graph((int) Math.pow(2, 14), "ccliques");
 
         int i = 0;
         for (; i < Math.pow(2, 13); i++) {
@@ -139,21 +135,18 @@ public class Main {
         }
 
         for (; i < Math.pow(2, 13) + Math.pow(2, 12); i++) {
-            for (int j = (int)Math.pow(2, 13); j < Math.pow(2, 13) + Math.pow(2, 12); j++) {
+            for (int j = (int) Math.pow(2, 13); j < Math.pow(2, 13) + Math.pow(2, 12); j++) {
                 chainedCliques.addEdge(i, j, true);
             }
         }
 
         for (; i < Math.pow(2, 14); i++) {
-            for (int j = (int)Math.pow(2, 13) + (int)Math.pow(2, 12); j < Math.pow(2, 14); j++) {
+            for (int j = (int) Math.pow(2, 13) + (int) Math.pow(2, 12); j < Math.pow(2, 14); j++) {
                 chainedCliques.addEdge(i, j, true);
             }
         }
 
-        chainedCliques.addEdge(0, (int)Math.pow(2, 14) - 1, false);
-
-        // System.out.println("Graph filled");
-
+        chainedCliques.addEdge(0, (int) Math.pow(2, 14) - 1, false);
         return chainedCliques;
     }
 }
