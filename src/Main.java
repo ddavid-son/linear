@@ -1,3 +1,4 @@
+
 public class Main {
 
     static long timeout = 1000 * 60 * 5;
@@ -54,26 +55,57 @@ public class Main {
             // System.setOut(new PrintStream(new File("output-file.txt")));
 
             System.out.println("clique:");
-//            runCoverAlgorithm("clique", 0);
+            //runCoverAlgorithm("clique", 0);
 
             System.out.println("chain:");
-//            runCoverAlgorithm("chain", 0);
+            //runCoverAlgorithm("chain", 0);
 
             System.out.println("candy:");
-            runCoverAlgorithm("candy", 16000);
+            //runCoverAlgorithm("candy", 16000);
 
             System.out.println("ccliques:");
             runCoverAlgorithm("ccliques", 16000);
 
         } catch (Exception err) {
-            System.out.println(err);
+            System.out.println("err");
         }
     }
 
     public static void EX2() {
-        var graph = chainedCliquesGraph();
-        System.out.println("chain:");
-        graph.pageRankAlgo(0.015, 64);
+        runPageRank("clique", 0);
+        runPageRank("chain", 0);
+        runPageRank("candy", 16000);
+        runPageRank("ccliques", 16000);
+    }
+
+    public static void EX3() {
+        Graph graph = cliqueGraph();
+        // Perform power iteration on the original matrix and get the largest eigenvalue and eigenvector
+        double[][] result1 = graph.powerIteration(0.15);
+        double lambda1 = result1[0][0]; // The largest eigenvalue
+        double[] x1 = result1[1]; // The corresponding eigenvector
+
+        // Perform deflation on the original matrix using lambda1 and x1
+        graph.deflate(lambda1, x1);
+
+        // Perform power iteration on the deflated matrix and get the second largest eigenvalue
+        double[][] result2 = graph.powerIteration(0.15);
+        double lambda2 = result2[0][0]; // The second largest eigenvalue
+        System.out.println("first eigenvalue: " + lambda1);
+        System.out.println("second eigenvalue: " + lambda2);
+        System.out.println("ratio: " + lambda2 / lambda1);
+    }
+
+    private static void runPageRank(String graphType, int startVortex) {
+        Graph graph = switch (graphType) {
+            case "chain" -> chainGraph();
+            case "candy" -> candyGraph();
+            case "ccliques" -> chainedCliquesGraph();
+            default -> cliqueGraph();
+        };
+
+        System.out.println("\n================== " + graph.type + " ==================");
+        graph.pageRankAlgo(Math.pow(2, -6), (int) Math.pow(2, 1), startVortex);
     }
 
     public static void main(String[] args) {
@@ -146,7 +178,7 @@ public class Main {
             }
         }
 
-        chainedCliques.addEdge(0, (int) Math.pow(2, 14) - 1, false);
+        chainedCliques.addEdge(0, (int) Math.pow(2, 14) - 1);
         return chainedCliques;
     }
 }
