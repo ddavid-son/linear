@@ -92,9 +92,9 @@ public class Graph {
         if (current == -1) {
             current = random.nextInt((int) Math.pow(2, 12)) + (int) Math.pow(2, 13) + (int) Math.pow(2, 12);
         }
-        int count = 1, miss = 0, totalMiss = 0;
-        int initial = current;
-        int bla = 0;
+        long count = 1, miss = 0, totalMiss = 0;
+        long initial = current;
+        long bla = 0;
 
         boolean[] visited = new boolean[graph.length];
         long start = System.currentTimeMillis();
@@ -103,8 +103,11 @@ public class Graph {
             visited[current] = true;
             current = getNeighbour(current);
 
+            if (bla % 1000 == 0)
+                System.out.println("bla: " + bla);
+
             if (System.currentTimeMillis() - start > timeout) {
-                System.out.println("finished due to timeout" + "; cover percentage: " + (count * 100 / graph.length) + "%" + "; total cover: " + count + "; totalMiss: " + totalMiss);
+                System.out.println("finished due to timeout" + "; cover percentage: " + (count * 100 / graph.length) + "%" + "; total cover: " + count + "; totalMiss: " + (totalMiss + miss + count));
                 return timeout;
             }
 
@@ -175,6 +178,17 @@ public class Graph {
         }
     }
 
+
+    // projection of vector
+    public double[] projection(double[] v, double[] u) {
+        double[] result = new double[v.length];
+        double scalar = dot(v, u) / dot(u, u);
+        for (int i = 0; i < v.length; i++) {
+            result[i] = scalar * u[i];
+        }
+        return result;
+    }
+
     public double[][] powerIteration(double tol) {
 
         // Initialize a random vector b with the same size as matrix
@@ -197,12 +211,13 @@ public class Graph {
         double lambda = 0;
 
         // Loop until convergence or maximum iterations reached
+        double[] y;
         while (true) {
             // Multiply matrix by b and store the result in a new vector y
-            double[] y = new double[b.length];
+            y = new double[b.length];
             for (int i = 0; i < y.length; i++) {
                 for (int j = 0; j < b.length; j++) {
-                    y[i] += graph[i][j] * b[j];
+                    y[i] += graph[j][i] * b[j] / outDegree[j];
                 }
             }
 
@@ -217,7 +232,7 @@ public class Graph {
             lambda = dot(y, b); // A method to calculate the dot product of two vectors
 
             // Check if the relative change in b is less than the tolerance
-            if (norm(subtract(b, z)) / norm(b) < tol) { // A method to subtract two vectors element-wise
+            if (norm(subtract(b, z)) < tol) { // A method to subtract two vectors element-wise
                 result = z;
                 break;
             }
@@ -245,6 +260,41 @@ public class Graph {
         }
         return Math.sqrt(sum);
     }
+
+    // vec * scalar func
+    public double[] scalarProduct(double[] vec, double scalar) {
+        double[] result = new double[vec.length];
+        for (int i = 0; i < vec.length; i++) {
+            result[i] = vec[i] * scalar;
+        }
+        return result;
+    }
+
+    public double[] matrixVectorProduct(double[] vec) {
+        double[] result = new double[vec.length];
+        for (int i = 0; i < vec.length; i++) {
+            for (int j = 0; j < vec.length; j++) {
+                result[i] += graph[j][i] * vec[j] / outDegree[j];
+            }
+        }
+        return result;
+    }
+    public double[] scalarDivision(double[] vec, double scalar) {
+        double[] result = new double[vec.length];
+        for (int i = 0; i < vec.length; i++) {
+            result[i] = vec[i] / scalar;
+        }
+        return result;
+    }
+
+    // get eigenvalue from vector
+    public double getEigenValue(double[] vec) {
+        double[] result = matrixVectorProduct(vec);
+
+        return dot(result, vec);
+    }
+    // find the eigenvalues of the matrix
+
 
     public double dot(double[] x, double[] y) {
         double sum = 0;
@@ -389,7 +439,6 @@ public class Graph {
 
         // Compute and return the ratio between the largest and second-largest eigenvalues
         return lambda1 / lambda2;
-
     }
 }
 

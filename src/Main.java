@@ -79,21 +79,54 @@ public class Main {
     }
 
     public static void EX3() {
+//        Graph graph = cliqueGraph();
+//        // Perform power iteration on the original matrix and get the largest eigenvalue and eigenvector
+//        double[][] result1 = graph.powerIteration(0.15);
+//        double lambda1 = result1[0][0]; // The largest eigenvalue
+//        double[] x1 = result1[1]; // The corresponding eigenvector
+//
+//        // Perform deflation on the original matrix using lambda1 and x1
+//        graph.deflate(lambda1, x1);
+//
+//        // Perform power iteration on the deflated matrix and get the second largest eigenvalue
+//        double[][] result2 = graph.powerIteration(0.15);
+//        double lambda2 = result2[0][0]; // The second largest eigenvalue
+//        System.out.println("first eigenvalue: " + lambda1);
+//        System.out.println("second eigenvalue: " + lambda2);
+//        System.out.println("ratio: " + lambda2 / lambda1);
+
+    }
+
+    public static void ex3() {
         Graph graph = cliqueGraph();
-        // Perform power iteration on the original matrix and get the largest eigenvalue and eigenvector
-        double[][] result1 = graph.powerIteration(0.15);
-        double lambda1 = result1[0][0]; // The largest eigenvalue
-        double[] x1 = result1[1]; // The corresponding eigenvector
+        double[][] eigenVecVal = graph.powerIteration(0.15);
+        double[] v1 = eigenVecVal[1]; // vpi
+        double[] randVec = createRandomVector((int) Math.pow(2, 14));
+        double[] projectionV1 = graph.projection(randVec, v1); // vpos
 
-        // Perform deflation on the original matrix using lambda1 and x1
-        graph.deflate(lambda1, x1);
+        var ut = graph.subtract(randVec, projectionV1); // u_t
+        double[] w_t; // w_t
+        while (true) {
+            w_t = graph.matrixVectorProduct(ut);
+            double[] v_t = graph.subtract(w_t, graph.projection(w_t, v1)); // v_t
+            double[] prevUT = ut; // u_t_minus
+            double vtNorm = graph.norm(v_t);
+            ut = graph.scalarDivision(v_t, vtNorm);
 
-        // Perform power iteration on the deflated matrix and get the second largest eigenvalue
-        double[][] result2 = graph.powerIteration(0.15);
-        double lambda2 = result2[0][0]; // The second largest eigenvalue
-        System.out.println("first eigenvalue: " + lambda1);
-        System.out.println("second eigenvalue: " + lambda2);
-        System.out.println("ratio: " + lambda2 / lambda1);
+            if (graph.norm(graph.subtract(ut, prevUT)) < Math.pow(2, -6)) {
+                break;
+            }
+        }
+    }
+
+
+    // create reand vectorq
+    public static double[] createRandomVector(int size) {
+        double[] vector = new double[size];
+        for (int i = 0; i < size; i++) {
+            vector[i] = Math.random();
+        }
+        return vector;
     }
 
     private static void runPageRank(String graphType, int startVortex) {
@@ -110,7 +143,7 @@ public class Main {
 
     public static void main(String[] args) {
         EX1();
-        //EX2();
+//        EX2();
     }
 
     // ==================== Graphs ==================== //
