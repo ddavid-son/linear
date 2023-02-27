@@ -3,14 +3,14 @@ import java.util.Random;
 
 public class Graph {
 
-    private int[][] graph;
+    private double[][] graph;
     int[] outDegree;
     String type = "";
     Random random = new Random();
 
 
     public Graph(int size) {
-        graph = new int[size][size];
+        graph = new double[size][size];
         outDegree = new int[size];
         Arrays.fill(outDegree, 0);
     }
@@ -21,12 +21,12 @@ public class Graph {
     }
 
     public Graph() {
-        graph = new int[0][0];
+        graph = new double[0][0];
         outDegree = new int[0];
     }
 
     public void addVertex(int vertex) {
-        int[][] newAdjacencyMatrix = new int[graph.length + 1][graph.length + 1];
+        double[][] newAdjacencyMatrix = new double[graph.length + 1][graph.length + 1];
         for (int i = 0; i < graph.length; i++) {
             System.arraycopy(graph[i], 0, newAdjacencyMatrix[i], 0, graph.length);
         }
@@ -130,13 +130,18 @@ public class Graph {
     }
 
     private int getNeighbour(int current) {
-        return switch (type) {
-            case "chain" -> getChainNeighbour(current);
-            case "clique" -> getCliqueNeighbour();
-            case "candy" -> getCandyNeighbour(current);
-            case "ccliques" -> getcCliequeNeighbour(current);
-            default -> throw new IllegalStateException("Unexpected value: " + type);
-        };
+        switch (type) {
+            case "chain":
+                return getChainNeighbour(current);
+            case "clique":
+                return getCliqueNeighbour();
+            case "candy":
+                return getCandyNeighbour(current);
+            case "ccliques":
+                return getcCliequeNeighbour(current);
+            default:
+                throw new IllegalStateException("Unexpected value: " + type);
+        }
     }
 
     private int getChainNeighbour(int current) {
@@ -189,6 +194,26 @@ public class Graph {
         return result;
     }
 
+    public void normalize(){
+        for (int i = 0; i < graph.length; i++) {
+            for (int j = 0; j < graph.length; j++) {
+                graph[i][j] /= outDegree[i];
+            }
+        }
+        transpose();
+    }
+
+    public void transpose(){
+        double temp;
+        for (int i = 0; i < graph.length; i++) {
+            for (int j = i; j < graph.length; j++) {
+                temp = graph[i][j];
+                graph[i][j] = graph[j][i];
+                graph[j][i] = temp;
+            }
+        }
+    }
+
     public double[][] powerIteration(double tol) {
 
         // Initialize a random vector b with the same size as matrix
@@ -214,12 +239,15 @@ public class Graph {
         double[] y;
         while (true) {
             // Multiply matrix by b and store the result in a new vector y
+            long start = System.currentTimeMillis();
             y = new double[b.length];
             for (int i = 0; i < y.length; i++) {
                 for (int j = 0; j < b.length; j++) {
-                    y[i] += graph[j][i] * b[j] / outDegree[j];
+                    y[i] += graph[i][j] * b[j];
                 }
             }
+            long end = System.currentTimeMillis();
+            System.out.printf("matrix mul time: %f", end - start);
 
             // Normalize y and store the result in a new vector z
             double[] z = new double[y.length];
@@ -235,6 +263,12 @@ public class Graph {
             if (norm(subtract(b, z)) < tol) { // A method to subtract two vectors element-wise
                 result = z;
                 break;
+            }
+
+            if (iter % 1 == 0) {
+                System.out.printf("max iteration: %d\n", iter);
+                System.out.printf("tol is %f\n", tol);
+                System.out.printf("delta is %f\n", norm(subtract(b, z)));
             }
 
             // Update b with z and increment the iteration counter
@@ -439,6 +473,15 @@ public class Graph {
 
         // Compute and return the ratio between the largest and second-largest eigenvalues
         return lambda1 / lambda2;
+    }
+
+    public double computeEigenvalue(double[] vector) {
+        double[] mul = this.matrixVectorProduct(vector);
+        double eigenvalue = 0;
+        for (int i = 0; i < this.graph.length; i++) {
+            eigenvalue += mul[i] / vector[i];
+        }
+        return eigenvalue / this.graph.length;
     }
 }
 

@@ -5,13 +5,23 @@ public class Main {
 
     public static void runCoverAlgorithm(String graphType, int startingVertex) throws Exception {
         long graphAvg = 0, graphMax = 0, graphMin = Long.MAX_VALUE;
-        Graph graph = switch (graphType) {
-            case "clique" -> cliqueGraph();
-            case "chain" -> chainGraph();
-            case "candy" -> candyGraph();
-            case "ccliques" -> chainedCliquesGraph();
-            default -> throw new Exception("Not supported !!! (yet...)");
-        };
+        Graph graph;
+        switch (graphType) {
+            case "clique":
+                graph = cliqueGraph();
+                break;
+            case "chain":
+                graph = chainGraph();
+                break;
+            case "candy":
+                graph = candyGraph();
+                break;
+            case "ccliques":
+                graph = chainedCliquesGraph();
+                break;
+            default:
+                throw new Exception("Not supported !!! (yet...)");
+        }
 
         System.out.println("graph created");
 
@@ -50,6 +60,60 @@ public class Main {
         System.out.println();
     }
 
+    public static void printRatioV12(String graphType, double epsilon) throws Exception {
+        Graph graph;
+        System.out.println("building graph...");
+        switch (graphType) {
+            case "clique":
+                graph = cliqueGraph();
+                break;
+            case "chain":
+                graph = chainGraph();
+                break;
+            case "candy":
+                graph = candyGraph();
+                break;
+            case "ccliques":
+                graph = chainedCliquesGraph();
+                break;
+            default:
+                throw new Exception("Not supported !!! (yet...)");
+        }
+        System.out.println("building graph completed");
+
+        graph.normalize();
+        double[][] eigenVecVal = graph.powerIteration(epsilon);
+        double[] v1 = eigenVecVal[1]; // vpi
+        double[] w0 = createRandomVector((int) Math.pow(2, 14));
+
+        var ut = graph.subtract(w0, graph.projection(w0, v1));
+        double[] wt;
+        int iter = 0;
+        while (true) {
+            wt = graph.matrixVectorProduct(ut);
+            double[] vt = graph.subtract(wt, graph.projection(wt, v1));
+            double[] prevUt = ut;
+            double vtNorm = graph.norm(vt);
+            ut = graph.scalarDivision(vt, vtNorm);
+
+            if (iter % 1 == 0) {
+                System.out.printf("iter %d\n", iter);
+                System.out.printf("epsilon %f\n", epsilon);
+                System.out.printf("delta %f\n", graph.norm(graph.subtract(ut, prevUt)));
+            }
+
+            if (graph.norm(graph.subtract(ut, prevUt)) < epsilon) {
+                break;
+            }
+
+            iter += 1;
+        }
+
+        System.out.printf("graphType %s\n", graphType);
+        System.out.printf("epsilon %s\n", epsilon);
+        System.out.printf("result: %f\n\n", graph.computeEigenvalue(v1) / graph.computeEigenvalue(ut));
+    }
+
     public static void EX1() {
         try {
             // System.setOut(new PrintStream(new File("output-file.txt")));
@@ -79,46 +143,39 @@ public class Main {
     }
 
     public static void EX3() {
-//        Graph graph = cliqueGraph();
-//        // Perform power iteration on the original matrix and get the largest eigenvalue and eigenvector
-//        double[][] result1 = graph.powerIteration(0.15);
-//        double lambda1 = result1[0][0]; // The largest eigenvalue
-//        double[] x1 = result1[1]; // The corresponding eigenvector
-//
-//        // Perform deflation on the original matrix using lambda1 and x1
-//        graph.deflate(lambda1, x1);
-//
-//        // Perform power iteration on the deflated matrix and get the second largest eigenvalue
-//        double[][] result2 = graph.powerIteration(0.15);
-//        double lambda2 = result2[0][0]; // The second largest eigenvalue
-//        System.out.println("first eigenvalue: " + lambda1);
-//        System.out.println("second eigenvalue: " + lambda2);
-//        System.out.println("ratio: " + lambda2 / lambda1);
 
-    }
+        try {
+            System.out.println("clique:");
+            printRatioV12("clique", Math.pow(2, -2));
+            // printRatioV12("clique", Math.pow(2, -3));
+            // printRatioV12("clique", Math.pow(2, -4));
+            // printRatioV12("clique", Math.pow(2, -5));
+            // printRatioV12("clique", Math.pow(2, -6));
 
-    public static void ex3() {
-        Graph graph = cliqueGraph();
-        double[][] eigenVecVal = graph.powerIteration(0.15);
-        double[] v1 = eigenVecVal[1]; // vpi
-        double[] randVec = createRandomVector((int) Math.pow(2, 14));
-        double[] projectionV1 = graph.projection(randVec, v1); // vpos
+            System.out.println("chain:");
+            printRatioV12("chain", Math.pow(2, -2));
+//        printRatioV12("chain", Math.pow(2, -3));
+//        printRatioV12("chain", Math.pow(2, -4));
+//        printRatioV12("chain", Math.pow(2, -5));
+//        printRatioV12("chain", Math.pow(2, -6));
 
-        var ut = graph.subtract(randVec, projectionV1); // u_t
-        double[] w_t; // w_t
-        while (true) {
-            w_t = graph.matrixVectorProduct(ut);
-            double[] v_t = graph.subtract(w_t, graph.projection(w_t, v1)); // v_t
-            double[] prevUT = ut; // u_t_minus
-            double vtNorm = graph.norm(v_t);
-            ut = graph.scalarDivision(v_t, vtNorm);
+            System.out.println("candy:");
+            printRatioV12("candy", Math.pow(2, -2));
+//        printRatioV12("candy", Math.pow(2, -3));
+//        printRatioV12("candy", Math.pow(2, -4));
+//        printRatioV12("candy", Math.pow(2, -5));
+//        printRatioV12("candy", Math.pow(2, -6));
 
-            if (graph.norm(graph.subtract(ut, prevUT)) < Math.pow(2, -6)) {
-                break;
-            }
+            System.out.println("ccliques:");
+            printRatioV12("ccliques", Math.pow(2, -2));
+//        printRatioV12("ccliques", Math.pow(2, -3));
+//        printRatioV12("ccliques", Math.pow(2, -4));
+//        printRatioV12("ccliques", Math.pow(2, -5));
+//        printRatioV12("ccliques", Math.pow(2, -6));
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
-
 
     // create reand vectorq
     public static double[] createRandomVector(int size) {
@@ -130,20 +187,30 @@ public class Main {
     }
 
     private static void runPageRank(String graphType, int startVortex) {
-        Graph graph = switch (graphType) {
-            case "chain" -> chainGraph();
-            case "candy" -> candyGraph();
-            case "ccliques" -> chainedCliquesGraph();
-            default -> cliqueGraph();
-        };
+        Graph graph;
+        switch (graphType) {
+            case "chain":
+                graph = chainGraph();
+                break;
+            case "candy":
+                graph = candyGraph();
+                break;
+            case "ccliques":
+                graph = chainedCliquesGraph();
+                break;
+            default:
+                graph = cliqueGraph();
+                break;
+        }
 
         System.out.println("\n================== " + graph.type + " ==================");
         graph.pageRankAlgo(Math.pow(2, -6), (int) Math.pow(2, 1), startVortex);
     }
 
     public static void main(String[] args) {
-        EX1();
+//        EX1();
 //        EX2();
+        EX3();
     }
 
     // ==================== Graphs ==================== //
