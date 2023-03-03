@@ -1,6 +1,8 @@
+import java.util.Random;
+
 public class EX1 {
 
-    static long timeout = 1000 * 60 * 5;
+    static long timeout = 1000 * 20; // 20 sec
 
     public static void run() {
         try {
@@ -17,7 +19,7 @@ public class EX1 {
             runCoverAlgorithm(GraphType.CCLiques, 16000);
 
         } catch (Exception err) {
-            System.out.println("err");
+            System.out.printf("err: %s", err.getMessage());
         }
     }
 
@@ -28,10 +30,12 @@ public class EX1 {
         System.out.println("graph created");
 
         for (int i = 0; i < 5; i++) {
-            long time = graph.coverTime(-1, timeout);
+            String chartId = String.format("EX1-RandomStart-%s-%d", graphType.name(), i);
+            long time = graph.coverTime(-1, timeout, chartId);
             graphAvg += time;
             graphMax = Math.max(graphMax, time);
             graphMin = Math.min(graphMin, time);
+            ChartService.saveChart(chartId, chartId, "Iteration", "Coverage", String.format("dist/EX1/RandomStart-%s-%d.png", graphType.name(), i));
             System.out.println("run number: " + i + " time: " + time);
         }
 
@@ -46,10 +50,12 @@ public class EX1 {
         graphMin = Long.MAX_VALUE;
 
         for (int i = 0; i < 5; i++) {
-            long time = graph.coverTime(startingVertex, timeout);
+            String chartId = String.format("EX1-DefinedStart-%s-%d", graphType.name(), i);
+            long time = graph.coverTime(startingVertex, timeout, chartId);
             graphAvg += time;
             graphMax = Math.max(graphMax, time);
             graphMin = Math.min(graphMin, time);
+            ChartService.saveChart(chartId, chartId, "Iteration", "Coverage", String.format("dist/EX1/DefinedStart-%s-%d.png", graphType.name(), i));
         }
 
         System.out.println();

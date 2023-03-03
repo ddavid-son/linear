@@ -32,13 +32,13 @@ public class EX3 {
 
             // save charts
             for (GraphType type : GraphType.values()) {
-                ChartService.saveChart(String.format("EX3-%s", type.name()), type.name(), "Epsilon", "Eigenvalue", String.format("dist/EX3/%s.png", type.name()), 5);
+                ChartService.saveChart(String.format("EX3-%s", type.name()), type.name(), "Epsilon", "Eigenvalue", String.format("dist/EX3/%s.png", type.name()));
                 for (int i = 2; i <= 6; i++) {
-                    ChartService.saveChart(String.format("EX3-%s-v1", type.name()), String.format("%s-v1", type.name()), "Iteration", "Eigenvalue", String.format("dist/EX3/%s-v1.png", type.name()), 1);
-                    ChartService.saveChart(String.format("EX3-%s-v2", type.name()), String.format("%s-v2", type.name()), "Iteration", "Eigenvalue", String.format("dist/EX3/%s-v2.png", type.name()), 1);
+                    ChartService.saveChart(String.format("EX3-%s-v1", type.name()), String.format("%s-v1", type.name()), "Iteration", "Eigenvalue", String.format("dist/EX3/%s-v1.png", type.name()));
+                    ChartService.saveChart(String.format("EX3-%s-v2", type.name()), String.format("%s-v2", type.name()), "Iteration", "Eigenvalue", String.format("dist/EX3/%s-v2.png", type.name()));
                 }
             }
-            ChartService.saveChart("EX3 ratios", "EX3 ratios", "Epsilon", "Ratio v1 and v2", "dist/EX3/Ratios.png", 5);
+            ChartService.saveChart("EX3 ratios", "EX3 ratios", "Epsilon", "Ratio v1 and v2", "dist/EX3/Ratios.png");
 
         } catch (Exception err) {
             err.printStackTrace();

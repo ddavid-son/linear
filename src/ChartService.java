@@ -61,8 +61,7 @@ public class ChartService {
             String title,
             String xLabel,
             String yLabel,
-            String filename,
-            double upperBound
+            String filename
     ) {
         // get our items
         ArrayList<ChartItem> items = charts.get(chartId);
@@ -99,10 +98,6 @@ public class ChartService {
             plot.setRenderer(serieNum, renderer1);
             serieNum++;
         }
-
-        // set axis range
-        NumberAxis rangeAxis = (NumberAxis) plot.getRangeAxis();
-        rangeAxis.setRange(0, upperBound);
 
         try {
             // save chart to file

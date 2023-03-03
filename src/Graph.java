@@ -93,40 +93,52 @@ public class Graph {
     }
 
 
-    public long coverTime(int current, long timeout) {
-        if (current == -1) {
-            current = random.nextInt((int) Math.pow(2, 12)) + (int) Math.pow(2, 13) + (int) Math.pow(2, 12);
+    public long coverTime(
+            int startingIdx,
+            long timeout,
+            String chartId
+    ) {
+        if (startingIdx == -1) {
+            // generate starting idx from the 3/4 graph part (always clique)
+            startingIdx = (int) Math.pow(2, 13) + (int) Math.pow(2, 12) + random.nextInt((int) Math.pow(2, 12));
         }
-        long count = 1, miss = 0, totalMiss = 0;
-        long initial = current;
-        long bla = 0;
 
+        long count = 1, miss = 0, totalMiss = 0, iteration = 0;
+        long initial = startingIdx;
         boolean[] visited = new boolean[graph.length];
         long start = System.currentTimeMillis();
-        while (count < graph.length) {
-            bla++;
-            visited[current] = true;
-            current = getNeighbour(current);
 
-            if (bla % 1000 == 0)
-                System.out.println("bla: " + bla);
+        while (count < graph.length) {
+            iteration++;
+            visited[startingIdx] = true;
+            startingIdx = getNeighbour(startingIdx);
 
             if (System.currentTimeMillis() - start > timeout) {
                 System.out.println("finished due to timeout" + "; cover percentage: " + (count * 100 / graph.length) + "%" + "; total cover: " + count + "; totalMiss: " + (totalMiss + miss + count));
                 return timeout;
             }
 
-            if (visited[current]) {
+            if (visited[startingIdx]) {
                 miss++;
             }
 
-            if (!visited[current]) {
+            if (!visited[startingIdx]) {
                 count++;
                 totalMiss += miss;
-                System.out.println("misses: " + totalMiss + " +" + miss + " bla: " + bla);
+                System.out.println("misses: " + totalMiss + " + " + miss + " iteration: " + iteration);
                 miss = 0;
                 System.out.println("total cover: " + count);
                 System.out.println("cover percentage: " + (count * 100 / graph.length) + "%" + " started at: " + initial);
+            }
+
+            if (iteration % 1000 == 0) {
+                // graph of iteration (x) to count (y)
+                ChartService.addChartItem(
+                        chartId,
+                        "count",
+                        iteration,
+                        count
+                );
             }
         }
 
