@@ -5,7 +5,7 @@ public class Graph {
 
     private double[][] graph;
     int[] outDegree;
-    String type = "";
+    GraphType graphType;
     Random random = new Random();
 
 
@@ -15,9 +15,9 @@ public class Graph {
         Arrays.fill(outDegree, 0);
     }
 
-    public Graph(int size, String type) {
+    public Graph(int size, GraphType type) {
         this(size);
-        this.type = type;
+        this.graphType = type;
     }
 
     public Graph() {
@@ -88,6 +88,11 @@ public class Graph {
         addEdge(src, dst, false);
     }
 
+    public double[][] getGraph() {
+        return graph;
+    }
+
+
     public long coverTime(int current, long timeout) {
         if (current == -1) {
             current = random.nextInt((int) Math.pow(2, 12)) + (int) Math.pow(2, 13) + (int) Math.pow(2, 12);
@@ -130,17 +135,17 @@ public class Graph {
     }
 
     private int getNeighbour(int current) {
-        switch (type) {
-            case "chain":
+        switch (graphType) {
+            case Chain:
                 return getChainNeighbour(current);
-            case "clique":
+            case Clique:
                 return getCliqueNeighbour();
-            case "candy":
+            case Candy:
                 return getCandyNeighbour(current);
-            case "ccliques":
+            case CCLiques:
                 return getcCliequeNeighbour(current);
             default:
-                throw new IllegalStateException("Unexpected value: " + type);
+                throw new IllegalStateException("Unexpected value: " + graphType);
         }
     }
 
@@ -183,17 +188,6 @@ public class Graph {
         }
     }
 
-
-    // projection of vector
-    public double[] projection(double[] v, double[] u) {
-        double[] result = new double[v.length];
-        double scalar = dot(v, u) / dot(u, u);
-        for (int i = 0; i < v.length; i++) {
-            result[i] = scalar * u[i];
-        }
-        return result;
-    }
-
     public void normalize(){
         for (int i = 0; i < graph.length; i++) {
             for (int j = 0; j < graph.length; j++) {
@@ -214,274 +208,100 @@ public class Graph {
         }
     }
 
-    public double[][] powerIteration(double tol) {
+    // this method assumes that 'this' is already normalized
+    public double[] powerIteration(double epsilon) throws Exception {
+        boolean stop;
+        double delta, normVt;
+        double[] vt, ut;
+        double[] utm1 = Utils.generateRandomVector(graph.length); // u0. i.e "ut minus 1"
+        int iteration = 0;
 
-        // Initialize a random vector b with the same size as matrix
-        double[] b = new double[graph.length];
-        double[] result = new double[]{};
-        for (int i = 0; i < b.length; i++) {
-            b[i] = Math.random();
-        }
+        do {
+            // compute vt
+            vt = Utils.multiply(this.graph, utm1);
 
-        // Set a tolerance for convergence
-        // double tol = 1e-6;
+            // compute ut
+            normVt = Utils.computeNorm(vt);
+            ut = Utils.divide(vt, normVt);
 
-        // Set a maximum number of iterations
-        int maxIter = 100;
+            // compute delta
+            delta = Utils.computeNorm(Utils.subtract(ut, utm1));
 
-        // Initialize an iteration counter
-        int iter = 0;
+            // add to chart
+            ChartService.addChartItem(
+                    String.format("EX3-%s-v1", graphType.name()), // chart of v1: eigenvalue per iteration
+                    "v1",
+                    iteration,
+                    Utils.computeEigenValue(this.graph, ut)
+            );
 
-        // Initialize a variable to store the eigenvalue estimate
-        double lambda = 0;
+            // check condition
+            stop = delta < epsilon;
 
-        // Loop until convergence or maximum iterations reached
-        double[] y;
-        while (true) {
-            // Multiply matrix by b and store the result in a new vector y
-            long start = System.currentTimeMillis();
-            y = new double[b.length];
-            for (int i = 0; i < y.length; i++) {
-                for (int j = 0; j < b.length; j++) {
-                    y[i] += graph[i][j] * b[j];
-                }
-            }
-            long end = System.currentTimeMillis();
-            System.out.printf("matrix mul time: %f", end - start);
+            // update utm1
+            utm1 = Utils.clone(ut);
 
-            // Normalize y and store the result in a new vector z
-            double[] z = new double[y.length];
-            double normY = norm(y); // A method to calculate the Euclidean norm of a vector
-            for (int i = 0; i < z.length; i++) {
-                z[i] = y[i] / normY;
-            }
+            iteration++;
+        } while(!stop);
 
-            // Update the eigenvalue estimate by taking the dot product of y and b
-            lambda = dot(y, b); // A method to calculate the dot product of two vectors
+        return ut;
+    }
 
-            // Check if the relative change in b is less than the tolerance
-            if (norm(subtract(b, z)) < tol) { // A method to subtract two vectors element-wise
-                result = z;
+    // this method assumes that 'this' is already normalized
+    public double[] generalizedPowerIteration(
+            double[] v1,
+            double epsilon,
+            int maxIterations
+    ) throws Exception {
+
+        boolean stop;
+        double delta, normVt;
+        double[] wt, ut, vt, projWtOnV1;
+        double[] utm1; // i.e "ut minus 1"
+        int iteration = 0;
+
+        double[] w0 = Utils.generateRandomVector(graph.length);
+        utm1 = Utils.computeProj(w0, v1); // compute u0
+
+        do {
+            // compute wt
+            wt = Utils.multiply(this.graph, utm1);
+
+            // compute vt
+            projWtOnV1 = Utils.computeProj(wt, v1);
+            vt = Utils.subtract(wt, projWtOnV1);
+
+            // compute ut
+            normVt = Utils.computeNorm(vt);
+            ut = Utils.divide(vt, normVt);
+
+            // compute delta
+            delta = Utils.computeNorm(Utils.subtract(ut, utm1));
+
+            // add to chart
+            ChartService.addChartItem(
+                    String.format("EX3-%s-v2", graphType.name()), // chart of v2: eigenvalue per iteration
+                    "v2",
+                    iteration,
+                    Utils.computeEigenValue(this.graph, ut)
+            );
+
+            // check condition
+            stop = delta < epsilon;
+
+            // update utm1
+            utm1 = Utils.clone(ut);
+
+            // break on max iterations
+            if (iteration == maxIterations) {
+                System.out.println("[generalizedPowerIteration] max iterations reached. skipping search...");
                 break;
             }
+            iteration++;
 
-            if (iter % 1 == 0) {
-                System.out.printf("max iteration: %d\n", iter);
-                System.out.printf("tol is %f\n", tol);
-                System.out.printf("delta is %f\n", norm(subtract(b, z)));
-            }
+        } while(!stop);
 
-            // Update b with z and increment the iteration counter
-            b = z;
-            iter++;
-
-            // Check if the maximum number of iterations is reached
-            if (iter == maxIter) {
-                System.out.println("Maximum iterations reached");
-                break;
-            }
-        }
-
-
-        return new double[][]{new double[]{lambda}, result}; // eigenvalue and eigenvector
-//        return lambda;
-    }
-
-    public double norm(double[] vec) {
-        double sum = 0;
-        for (double v : vec) {
-            sum += v * v;
-        }
-        return Math.sqrt(sum);
-    }
-
-    // vec * scalar func
-    public double[] scalarProduct(double[] vec, double scalar) {
-        double[] result = new double[vec.length];
-        for (int i = 0; i < vec.length; i++) {
-            result[i] = vec[i] * scalar;
-        }
-        return result;
-    }
-
-    public double[] matrixVectorProduct(double[] vec) {
-        double[] result = new double[vec.length];
-        for (int i = 0; i < vec.length; i++) {
-            for (int j = 0; j < vec.length; j++) {
-                result[i] += graph[j][i] * vec[j] / outDegree[j];
-            }
-        }
-        return result;
-    }
-    public double[] scalarDivision(double[] vec, double scalar) {
-        double[] result = new double[vec.length];
-        for (int i = 0; i < vec.length; i++) {
-            result[i] = vec[i] / scalar;
-        }
-        return result;
-    }
-
-    // get eigenvalue from vector
-    public double getEigenValue(double[] vec) {
-        double[] result = matrixVectorProduct(vec);
-
-        return dot(result, vec);
-    }
-    // find the eigenvalues of the matrix
-
-
-    public double dot(double[] x, double[] y) {
-        double sum = 0;
-        for (int i = 0; i < x.length; i++) {
-            sum += x[i] * y[i];
-        }
-        return sum;
-    }
-
-    public double[] subtract(double[] x, double[] y) {
-        double[] z = new double[x.length];
-        for (int i = 0; i < x.length; i++) {
-            z[i] = x[i] - y[i];
-        }
-        return z;
-    }
-
-    // Define a method to perform deflation on a given matrix and an eigenvalue-eigenvector pair
-    // This method returns a new matrix that has one less dimension and one less eigenvalue than the original matrix
-    public void deflate(double lambda, double[] x) {
-
-        // Calculate x * x^T, where x^T is the transpose of x
-        double[][] xxT = new double[graph.length][graph[0].length];
-        for (int i = 0; i < xxT.length; i++) {
-            for (int j = 0; j < xxT[0].length; j++) {
-                xxT[i][j] = x[i] * x[j];
-            }
-        }
-
-        // Subtract lambda * x * x^T from matrix and store the result in a new matrix B
-        double[][] B = new double[graph.length][graph[0].length];
-        for (int i = 0; i < B.length; i++) {
-            for (int j = 0; j < B[0].length; j++) {
-                B[i][j] = graph[i][j] - lambda * xxT[i][j];
-            }
-        }
-
-        // Find an index k such that |x[k]| is maximal
-        int k = 0;
-        for (int i = 1; i < x.length; i++) {
-            if (Math.abs(x[i]) > Math.abs(x[k])) {
-                k = i;
-            }
-        }
-
-        // Create a new matrix C that has one less row and one less column than B by removing row k and column k
-        double[][] C = new double[B.length - 1][B[0].length - 1];
-        for (int i = 0; i < C.length; i++) {
-            for (int j = 0; j < C[0].length; j++) {
-                if (i < k && j < k) {
-                    C[i][j] = B[i][j];
-                } else if (i < k) {
-                    C[i][j] = B[i][j + 1];
-                } else if (j < k) {
-                    C[i][j] = B[i + 1][j];
-                } else {
-                    C[i][j] = B[i + 1][j + 1];
-                }
-            }
-        }
-    }
-
-
-    // gets all the job done in a single method - need to see if legit
-    public double calcRatioOfEigenVal(double tol) {
-        int n = graph.length;
-        double[] x = new double[n];
-        double[] y = new double[n];
-        double[] z = new double[n];
-        double lambda1 = 0;
-        double lambda2 = 0;
-        //double tol = 1e-8; // tolerance value for convergence
-
-        // Initialize x to a random vector
-        Random rand = new Random();
-        for (int i = 0; i < n; i++) {
-            x[i] = rand.nextDouble();
-        }
-
-        // Perform power iteration to find the largest eigenvalue and corresponding eigenvector
-        while (true) {
-            // Multiply matrix by x
-            for (int i = 0; i < n; i++) {
-                y[i] = 0;
-                for (int j = 0; j < n; j++) {
-                    y[i] += graph[i][j] * x[j];
-                }
-            }
-
-            // Find the largest element in y and store its index in z
-            int idx = 0;
-            for (int i = 1; i < n; i++) {
-                if (Math.abs(y[i]) > Math.abs(y[idx])) {
-                    idx = i;
-                }
-            }
-
-            // Normalize y and check for convergence
-            double norm = y[idx];
-            for (int i = 0; i < n; i++) {
-                x[i] = y[i] / norm;
-            }
-            if (Math.abs(lambda1 - norm) < tol) {
-                break;
-            }
-            lambda1 = norm;
-        }
-
-        // Perform power iteration to find the second-largest eigenvalue
-        while (true) {
-            // Multiply matrix by x
-            for (int i = 0; i < n; i++) {
-                y[i] = 0;
-                for (int j = 0; j < n; j++) {
-                    y[i] += graph[i][j] * x[j];
-                }
-            }
-
-            // Subtract the contribution of the largest eigenvalue
-            for (int i = 0; i < n; i++) {
-                y[i] -= lambda1 * x[i];
-            }
-
-            // Find the largest element in y and store its index in z
-            int idx = 0;
-            for (int i = 1; i < n; i++) {
-                if (Math.abs(y[i]) > Math.abs(y[idx])) {
-                    idx = i;
-                }
-            }
-
-            // Normalize y and check for convergence
-            double norm = y[idx];
-            for (int i = 0; i < n; i++) {
-                x[i] = y[i] / norm;
-            }
-            if (Math.abs(lambda2 - norm) < tol) {
-                break;
-            }
-            lambda2 = norm;
-        }
-
-        // Compute and return the ratio between the largest and second-largest eigenvalues
-        return lambda1 / lambda2;
-    }
-
-    public double computeEigenvalue(double[] vector) {
-        double[] mul = this.matrixVectorProduct(vector);
-        double eigenvalue = 0;
-        for (int i = 0; i < this.graph.length; i++) {
-            eigenvalue += mul[i] / vector[i];
-        }
-        return eigenvalue / this.graph.length;
+        return ut;
     }
 }
 
