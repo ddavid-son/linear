@@ -68,6 +68,51 @@ public class Graph {
         System.out.println("PageRank: ");
     }
 
+    public double[] pageRankAlgoV2(
+            double epsilon,
+            int maxIterations,
+            int startingIdx
+    ) throws Exception {
+        boolean stop;
+        double delta;
+        int iteration = 0;
+
+        // build vector
+        double [] distribution = GraphFactory.createDistribution(graphType);
+
+        // set initial vector
+        double[] cur_vector = new double[graph.length];
+        if (startingIdx == -1) {
+            Arrays.fill(cur_vector, 1 / Math.pow(2, 14));
+        } else {
+            Arrays.fill(cur_vector, 0);
+            cur_vector[startingIdx] = 1;
+        }
+
+        do {
+            // calc next vector
+            cur_vector = Utils.multiply(this.graph, cur_vector);
+
+            // compute delta
+            delta = Utils.computeNorm(Utils.subtract(cur_vector, distribution));
+
+            // check stop condition
+            stop = delta < epsilon;
+
+            // break on max iterations
+            System.out.printf("iteration: %d; delta: %f\n", iteration, delta);
+            if (iteration == maxIterations) {
+                System.out.println("[generalizedPowerIteration] max iterations reached. skipping search...");
+                break;
+            }
+            iteration++;
+
+        } while(!stop);
+
+        return cur_vector;
+    }
+
+
     public int getOutDegree(int vertex) {
         return outDegree[vertex];
     }
@@ -125,10 +170,17 @@ public class Graph {
             if (!visited[startingIdx]) {
                 count++;
                 totalMiss += miss;
-                System.out.println("misses: " + totalMiss + " + " + miss + " iteration: " + iteration);
                 miss = 0;
-                System.out.println("total cover: " + count);
-                System.out.println("cover percentage: " + (count * 100 / graph.length) + "%" + " started at: " + initial);
+//                System.out.println("misses: " + totalMiss + " + " + miss + " iteration: " + iteration);
+//                System.out.println("total cover: " + count);
+//                System.out.println("cover percentage: " + (count * 100 / graph.length) + "%" + " started at: " + initial);
+
+                ChartService.addChartItem(
+                        String.format("%s-misses", chartId),
+                        "misses",
+                        count,
+                        totalMiss
+                );
             }
 
             if (iteration % 1000 == 0) {
@@ -221,7 +273,12 @@ public class Graph {
     }
 
     // this method assumes that 'this' is already normalized
-    public double[] powerIteration(double epsilon) throws Exception {
+    public double[] powerIteration(
+            double epsilon,
+            String chartId,
+            String lineId,
+            int maxIterations
+    ) throws Exception {
         boolean stop;
         double delta, normVt;
         double[] vt, ut;
@@ -241,8 +298,8 @@ public class Graph {
 
             // add to chart
             ChartService.addChartItem(
-                    String.format("EX3-%s-v1", graphType.name()), // chart of v1: eigenvalue per iteration
-                    "v1",
+                    chartId, // chart of eigenvector: eigenvalue per iteration
+                    lineId,
                     iteration,
                     Utils.computeEigenValue(this.graph, ut)
             );
@@ -253,12 +310,19 @@ public class Graph {
             // update utm1
             utm1 = Utils.clone(ut);
 
+//            System.out.printf("iteration: %d\n", iteration);
+            // break on max iterations
+            if (iteration == maxIterations) {
+                System.out.println("[generalizedPowerIteration] max iterations reached. skipping search...");
+                break;
+            }
             iteration++;
         } while(!stop);
 
         return ut;
     }
 
+    // not in use: doesnt work
     // this method assumes that 'this' is already normalized
     public double[] generalizedPowerIteration(
             double[] v1,
@@ -315,9 +379,16 @@ public class Graph {
 
         return ut;
     }
+
+    // the attempts to cancel the most dominant component using projection didnt work.
+    // this algorithm is used to cancel the most dominant component according to numpy docs (python library)
+    public void cancelVectorComponent(double[] vector) throws Exception {
+        double lambda = Utils.computeEigenValue(this.graph, vector);
+        for (int i = 0; i < this.graph.length; i++) {
+            for (int j = 0; j < this.graph.length; j++) {
+                this.graph[i][j] -= vector[i] * vector[j]; // subtract the vector outer product
+                this.graph[i][j] *= lambda;
+            }
+        }
+    }
 }
-
-
-
-
-

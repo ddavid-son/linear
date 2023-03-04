@@ -1,5 +1,3 @@
-import java.util.Random;
-
 public class EX1 {
 
     static long timeout = 1000 * 20; // 20 sec
@@ -26,7 +24,7 @@ public class EX1 {
 
     public static void runCoverAlgorithm(GraphType graphType, int startingVertex) throws Exception {
         long graphAvg = 0, graphMax = 0, graphMin = Long.MAX_VALUE;
-        Graph graph = GraphFactory.create(graphType);
+        Graph graph = GraphFactory.createGraph(graphType);
         System.out.println("graph created");
 
         for (int i = 0; i < 5; i++) {
@@ -36,6 +34,7 @@ public class EX1 {
             graphMax = Math.max(graphMax, time);
             graphMin = Math.min(graphMin, time);
             ChartService.saveChart(chartId, chartId, "Iteration", "Coverage", String.format("dist/EX1/RandomStart-%s-%d.png", graphType.name(), i));
+            ChartService.saveChart(String.format("%s-misses", chartId), String.format("%s-misses", chartId), "Coverage Count", "Misses", String.format("dist/EX1/RandomStart-%s-%d-misses.png", graphType.name(), i));
             System.out.println("run number: " + i + " time: " + time);
         }
 
@@ -56,6 +55,7 @@ public class EX1 {
             graphMax = Math.max(graphMax, time);
             graphMin = Math.min(graphMin, time);
             ChartService.saveChart(chartId, chartId, "Iteration", "Coverage", String.format("dist/EX1/DefinedStart-%s-%d.png", graphType.name(), i));
+            ChartService.saveChart(String.format("%s-misses", chartId), String.format("%s-misses", chartId), "Coverage Count", "Misses", String.format("dist/EX1/DefinedStart-%s-%d-misses.png", graphType.name(), i));
         }
 
         System.out.println();

@@ -1,0 +1,207 @@
+clique:
+start Clique with 0.250000
+v1 is 1.000000
+v2 is 0.000000
+*****************************
+graph: Clique
+epsilon: 0.250000
+ratio: 22860911814063.426000
+*****************************
+
+finish Clique with 0.250000
+start Clique with 0.125000
+v1 is 1.000000
+v2 is 0.000000
+*****************************
+graph: Clique
+epsilon: 0.125000
+ratio: 75059993789508.250000
+*****************************
+
+finish Clique with 0.125000
+start Clique with 0.062500
+v1 is 1.000000
+v2 is 0.000000
+*****************************
+graph: Clique
+epsilon: 0.062500
+ratio: 88305875046480.310000
+*****************************
+
+finish Clique with 0.062500
+start Clique with 0.031250
+v1 is 1.000000
+[generalizedPowerIteration] max iterations reached. skipping search...
+v2 is -0.000000
+*****************************
+graph: Clique
+epsilon: 0.031250
+ratio: -86607685141740.310000
+*****************************
+
+finish Clique with 0.031250
+start Clique with 0.015625
+v1 is 1.000000
+[generalizedPowerIteration] max iterations reached. skipping search...
+v2 is -0.000000
+*****************************
+graph: Clique
+epsilon: 0.015625
+ratio: -70368744177664.000000
+*****************************
+
+finish Clique with 0.015625
+chain:
+start Chain with 0.250000
+v1 is 0.992120
+v2 is 0.929928
+*****************************
+graph: Chain
+epsilon: 0.250000
+ratio: 1.066878
+*****************************
+
+finish Chain with 0.250000
+start Chain with 0.125000
+v1 is 0.992502
+v2 is 0.942021
+*****************************
+graph: Chain
+epsilon: 0.125000
+ratio: 1.053588
+*****************************
+
+finish Chain with 0.125000
+start Chain with 0.062500
+v1 is 0.995793
+v2 is 0.963043
+*****************************
+graph: Chain
+epsilon: 0.062500
+ratio: 1.034007
+*****************************
+
+finish Chain with 0.062500
+start Chain with 0.031250
+v1 is 0.997109
+v2 is 0.977466
+*****************************
+graph: Chain
+epsilon: 0.031250
+ratio: 1.020096
+*****************************
+
+finish Chain with 0.031250
+start Chain with 0.015625
+v1 is 0.998701
+v2 is 0.988840
+*****************************
+graph: Chain
+epsilon: 0.015625
+ratio: 1.009972
+*****************************
+
+finish Chain with 0.015625
+candy:
+start Candy with 0.250000
+v1 is 0.996170
+v2 is 0.934654
+*****************************
+graph: Candy
+epsilon: 0.250000
+ratio: 1.065817
+*****************************
+
+finish Candy with 0.250000
+start Candy with 0.125000
+v1 is 0.995994
+v2 is 0.943635
+*****************************
+graph: Candy
+epsilon: 0.125000
+ratio: 1.055486
+*****************************
+
+finish Candy with 0.125000
+start Candy with 0.062500
+v1 is 0.997805
+v2 is 0.964775
+*****************************
+graph: Candy
+epsilon: 0.062500
+ratio: 1.034236
+*****************************
+
+finish Candy with 0.062500
+start Candy with 0.031250
+v1 is 0.998503
+v2 is 0.978258
+*****************************
+graph: Candy
+epsilon: 0.031250
+ratio: 1.020695
+*****************************
+
+finish Candy with 0.031250
+start Candy with 0.015625
+v1 is 0.998867
+v2 is 0.989028
+*****************************
+graph: Candy
+epsilon: 0.015625
+ratio: 1.009948
+*****************************
+
+finish Candy with 0.015625
+ccliques:
+start CCLiques with 0.250000
+v1 is 0.996131
+v2 is 0.937388
+*****************************
+graph: CCLiques
+epsilon: 0.250000
+ratio: 1.062666
+*****************************
+
+finish CCLiques with 0.250000
+start CCLiques with 0.125000
+v1 is 0.996061
+v2 is 0.949964
+*****************************
+graph: CCLiques
+epsilon: 0.125000
+ratio: 1.048526
+*****************************
+
+finish CCLiques with 0.125000
+start CCLiques with 0.062500
+v1 is 0.997710
+v2 is 0.963735
+*****************************
+graph: CCLiques
+epsilon: 0.062500
+ratio: 1.035253
+*****************************
+
+finish CCLiques with 0.062500
+start CCLiques with 0.031250
+v1 is 0.998428
+v2 is 0.978987
+*****************************
+graph: CCLiques
+epsilon: 0.031250
+ratio: 1.019859
+*****************************
+
+finish CCLiques with 0.031250
+start CCLiques with 0.015625
+v1 is 0.998881
+v2 is 0.989304
+*****************************
+graph: CCLiques
+epsilon: 0.015625
+ratio: 1.009681
+*****************************
+finish CCLiques with 0.015625
+
+Process finished with exit code 0

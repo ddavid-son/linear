@@ -1,6 +1,9 @@
+import java.lang.reflect.Array;
+import java.util.Arrays;
+
 public class GraphFactory {
 
-    public static Graph create(GraphType type) throws Exception {
+    public static Graph createGraph(GraphType type) throws Exception {
         switch (type) {
             case Clique:
                 return createCliqueGraph();
@@ -13,6 +16,73 @@ public class GraphFactory {
             default:
                 throw new Exception("Graph not supported!");
         }
+    }
+
+    public static double[] createDistribution(GraphType type) throws Exception {
+        switch (type) {
+            case Clique:
+                return createCliqueDistribution();
+            case Chain:
+                return createChainDistribution();
+            case Candy:
+                return createCandyDistribution();
+            case CCLiques:
+                return createCCliquesDistribution();
+            default:
+                throw new Exception("Graph not supported!");
+        }
+    }
+
+    private static double[] createCliqueDistribution() throws Exception {
+        double[] distribution = new double[(int) Math.pow(2, 14)];
+        Arrays.fill(distribution, distribution.length);
+        distribution = Utils.divide(distribution, Utils.sumVector(distribution));
+        return distribution;
+    }
+
+    private static double[] createChainDistribution() throws Exception {
+        double[] distribution = new double[(int) Math.pow(2, 14)];
+        Arrays.fill(distribution, 3);
+        distribution[0] = distribution[distribution.length - 1] = 2;
+        distribution = Utils.divide(distribution, Utils.sumVector(distribution));
+        return distribution;
+    }
+
+    private static double[] createCandyDistribution() throws Exception {
+        double[] distribution = new double[(int) Math.pow(2, 14)];
+        distribution[0] = 2;
+        for (int i = 1; i < Math.pow(2, 13) - 1; i++) {
+            distribution[i] = 3;
+        }
+
+        // the node idx (n/2 - 1) has the same degree as the clique nodes
+        for (int i = (int)Math.pow(2, 13) - 1; i < Math.pow(2, 14); i++) {
+            distribution[i] = Math.pow(2, 13) + 1;
+        }
+
+        distribution = Utils.divide(distribution, Utils.sumVector(distribution));
+        return distribution;
+    }
+
+    private static double[] createCCliquesDistribution() throws Exception {
+        double[] distribution = new double[(int) Math.pow(2, 14)];
+        for (int i = 1; i < Math.pow(2, 13); i++) {
+            distribution[i] = 3;
+        }
+
+        for (int i = (int)Math.pow(2, 13); i < Math.pow(2, 13) + Math.pow(2, 12); i++) {
+            distribution[i] = Math.pow(2, 12);
+        }
+
+        for (int i = (int)Math.pow(2, 13) + (int)Math.pow(2, 12); i < Math.pow(2, 14); i++) {
+            distribution[i] = Math.pow(2, 12);
+        }
+
+        distribution[distribution.length - 1]++; // connect to chain: end of graph to idx 0
+        distribution[distribution.length / 2]++; // connect to chain: n/2 to idx n/2-1
+
+        distribution = Utils.divide(distribution, Utils.sumVector(distribution));
+        return distribution;
     }
 
     private static Graph createCandyGraph() {
@@ -64,7 +134,7 @@ public class GraphFactory {
         int i = 0;
         for (; i < Math.pow(2, 13); i++) {
             chainedCliques.addEdge(i, i, true);
-            chainedCliques.addEdge(i, i + 1);
+            chainedCliques.addEdge(i, i + 1); // includes connection from chain to clique n/2-1 + n/2
         }
 
         for (; i < Math.pow(2, 13) + Math.pow(2, 12); i++) {

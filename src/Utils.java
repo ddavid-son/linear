@@ -44,6 +44,14 @@ public class Utils {
         return res;
     }
 
+    public static double sumVector(double[] vec) {
+        double sum = 0;
+        for (int i = 0; i < vec.length; i++) {
+            sum += vec[i];
+        }
+        return sum;
+    }
+
     public static double[] multiply(double[][] mat, double[] vec) throws Exception {
         if (mat[0].length != vec.length) {
             throw new Exception("[Utils][multiply] failed to multiply matrix and vector. length mismatch!");
@@ -53,6 +61,24 @@ public class Utils {
         for (int i = 0; i < mat.length; i++) {
             for (int j = 0; j < vec.length; j++) {
                 res[i] += mat[i][j] * vec[j];
+            }
+        }
+        return res;
+    }
+
+    public static double[] multiply(double[] vec, double scalar) throws Exception {
+        double[] res = new double[vec.length];
+        for (int i = 0; i < vec.length; i++) {
+            res[i] += vec[i] * scalar;
+        }
+        return res;
+    }
+
+    public static double[][] multiply(double[][] mat, double scalar) throws Exception {
+        double[][] res = new double[mat.length][mat.length];
+        for (int i = 0; i < mat.length; i++) {
+            for (int j = 0; j < mat.length; j++) {
+                res[i][j] += mat[i][j] * scalar;
             }
         }
         return res;
@@ -92,8 +118,8 @@ public class Utils {
 
     public static double computeEigenValue(double[][] A, double[] v) throws Exception {
         double[] Av = multiply(A, v);
-        return computeNorm(Av) / computeNorm(v);
-//        return multiply(Av, v); // https://www.cs.huji.ac.il/w~csip/tirgul2.pdf
+//        return computeNorm(Av) / computeNorm(v);
+        return multiply(Av, v); // https://www.cs.huji.ac.il/w~csip/tirgul2.pdf
     }
 
     // projection on simple space (span of 1 vector 'u', no need for more)
@@ -104,5 +130,10 @@ public class Utils {
             res[i] = u[i] * scalar;
         }
         return res;
+    }
+
+    public static int randInt(int low, int high) {
+        Random random = new Random();
+        return low + random.nextInt(high - low);
     }
 }
